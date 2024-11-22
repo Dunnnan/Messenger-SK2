@@ -5,9 +5,11 @@
 1. Tworzenie Konta. (Nick|Login Hasło Imię Nazwisko adresObrazka)
 2. Logowanie.
 3. Strona główna
-4. Wyświetlanie znajomych.
-5. Wyszukiwywanie znajomych.
-6. Grupowa konwersacja.
+4. Chat.
+5. Wyświetlanie znajomych.
+6. Wyszukiwywanie znajomych.
+7. Dodawanie znajomych.
+8. Grupowa konwersacja.
 
 ### Czy możemy napisać klienta w pythonie.
 ### Jak ma wyglądać konwersacja z wieloma użytkownikami naraz.

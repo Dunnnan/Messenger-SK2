@@ -1,36 +1,157 @@
 import socket
+import threading
+import struct
+import time
+from multiprocessing.forkserver import connect_to_new_process
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_address = '127.0.0.1'
+server_address = "127.0.0.1"
 server_port = 1100
 
-try:
-    # Łączenie z serwerem
-    client_socket.connect((server_address, server_port))
-    print("Successfully connected to server.")
+class Message:
+    def __init__(self,flag):
+        self.flag = flag
 
-    # Odbieranie wiadomości od serwera
-    buffer = client_socket.recv(1024).decode()
-    print("Message from server: ",buffer)
+    def to_bytes(self):
+        return struct.pack("i",self.flag)
 
+def action(action):
+    if action == "signup":
+        # 1 Tworzenie konta
+        action = 100
+    elif action == "login":
+        # 2 Logowanie
+        action = 200
+    elif action == "main":
+        # 3 Strona Główna
+        action = 300
+    elif action == "chat":
+        # 4 Chat
+        action = 400
+    elif action == "friends":
+        # 5 Wyświetlanie znajomych
+        action = 500
+    elif action == "search":
+        # 6 Wyszukiwanie znajomych
+        action = 600
+    elif action == "invite":
+        # 7 Dodawanie znajomych
+        action = 700
+    elif action == "group":
+        # 8 Grupowa konwersacja
+        action = 800
+
+    elif action == "message":
+        # 0 Debug
+        action = 0
+
+    else:
+        # -1 Exit
+        return(-1)
+
+    return(action)
+
+def receive_message(client_socket):
+    client_socket.settimeout(1)
     while True:
-        message = input("\nEnter message to send to server: (or 'exit' to quit): ")
-
-        # Obsługa 'exit'
-        if message.lower() == 'exit':
-            print("Closing connection...")
+        try:
+            mess = client_socket.recv(1024).decode('utf-8',errors='replace') #char
+            if mess:
+                print(f"Server: {mess}")
+            else:
+                print("Server disconnected")
+                break
+        except socket.timeout:
+            print("Receiving message timed out")
+            break
+        except Exception as e:
+            print(f"An error occured while receiving message: {e}")
             break
 
-        # Wysyłanie wiadomości do serwera
-        client_socket.send(message.encode())
+def main():
 
-        # Odbieranie wiadomości od serwera
-        buffer = client_socket.recv(1024).decode()
-        print("Message from client: ",buffer)
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        client_socket.connect((server_address, server_port))
+        print("Connected to the server")
+    except Exception as e:
+        print(f"Could not connect to the server {e}")
 
-except Exception as e:
-    print(f"An error occurred: {e}")
+    while True:
 
-finally:
-    # Zamknięcie połączenia
+        # Choose action
+        try:
+            #print("\033[33mChoose action:\033[0m\n(1) signup\n(2) login\n(3) main\n(4) chat\n(5) friends\n(6) search\n(7) invite\n(8) group\n(9) message\n(-1) exit\n")
+            print("\033[33mChoose action:\033[0m (1) signup, (2) login, (3) main, (4) chat, (5) friends, (6) search, (7) invite, (8) group, (9) message, (-1) exit")
+            act = input()
+            flag = action(act)
+        except Exception as e:
+            print(f"An error occured while sending action: {e}")
+            break
+
+        try:
+            client_socket.send(struct.pack("i",flag))
+        except Exception as e:
+            print(f"An error occured while sending action: {e}")
+            break
+
+
+        # Act on action
+        if act == "signup":
+            # 1. Tworzenie konta
+            print("\033[33mImplement signup here: \033[0m")
+
+        elif act == "login":
+            # 2. Logowanie
+            print("\033[33mImplement login here: \033[0m")
+
+        elif act == "main":
+            # 3. Strona Główna
+            print("\033[33mImplement main page here: \033[0m")
+
+        elif act == "chat":
+            # 4. Chat
+            try:
+                print("\033[33mWaiting for chat history receiving \033[0m")
+                # Oczekiwanie na wiadomość
+                receive_thread = threading.Thread(target=receive_message, args=(client_socket,))
+                receive_thread.start()
+                receive_thread.join()
+            except Exception as e:
+                print(f"An error occurred while chatting: {e}")
+                break
+
+        elif act == "friends":
+            # 5. Wyświetlanie znajomych
+            print("\033[33mDisplay friends here: \033[0m")
+
+        elif act == "search":
+            # 6. Wyszukiwanie znajomych
+            print("\033[33mImplement friend search here: \033[0m")
+
+        elif act == "invite":
+            # 7. Dodawanie znajomych
+            print("\033[33mImplement friend invite here: \033[0m")
+
+        elif act == "group":
+            # 8. Grupowa konwersacja
+            print("\033[33mImplement group chat here: \033[0m")
+
+        elif act == "message":
+            # 0. Debug
+            print("\033[33mWaiting for message: \033[0m")
+            message = input()
+            try:
+                client_socket.send(message.encode('utf-8'))
+            except Exception as e:
+                print(f"An error occurred while sending message: {e}")
+                break
+
+        elif act == "exit":
+            print("\033[34mExiting the program \033[0m")
+            break
+
     client_socket.close()
+    print("Disconnected")
+
+if __name__ == "__main__":
+    main()
