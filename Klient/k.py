@@ -109,8 +109,8 @@ def main():
             client_socket.send(password.encode('utf-8'))
 
             data = client_socket.recv(4)
-            if data:
-                mess = struct.unpack('<i', data)[0]
+            mess = struct.unpack('<i', data)[0]
+            
             if mess == 110:
                 print("\033[33mKonto o podanym nicku już istnieje!\033[0m")
             elif mess == 120:
@@ -126,8 +126,8 @@ def main():
             client_socket.send(password.encode('utf-8'))
 
             data = client_socket.recv(4)
-            if data:
-                mess = struct.unpack('<i', data)[0]
+            mess = struct.unpack('<i', data)[0]
+            
             if mess == 210:
                 print("Konto o podanym nicku nie istnieje !")
             elif mess == 220:
