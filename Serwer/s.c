@@ -10,15 +10,43 @@
 #include<pthread.h>
 #include<fcntl.h>
 
+
+// Zmienne globalne
 #define PORT 1100
 #define BUFFER_SIZE 1024
 #define HISTORY_FILE "chat_history.txt"
+#define LOGIN_FILE "users.txt"
+
+// Zmienne do przetwarzania "users.txt"
+int name_index = 0;
+int surname_index = 1;
+int nick_index = 2;
+int password_index = 3;
+int columns = 4;
 
 pthread_mutex_t file_mutex;
+
+// Funkcje pomocnicze
+void gs(int client_socket, char *buffer, char *buffer2, size_t size) {
+    // Zerowanie buforów
+    bzero(buffer, size);
+    bzero(buffer2, size);
+
+    // Odbieranie danych
+    ssize_t received_bytes = recv(client_socket, buffer, size, 0);
+    if (received_bytes > 0) {
+        // Kopiowanie danych do drugiego bufora
+        strncpy(buffer2, buffer, size - 1); // Dodaj -1 dla miejsca na null-terminator
+    } else {
+        // Obsługa błędu lub zakończenia połączenia
+        perror("recv failed or connection closed");
+    }
+}
 
 typedef struct message{
     int flag;
 } order;
+
 
 void *handle_client(void *socket_desc){
     int client_socket = *(int *)socket_desc;
@@ -39,16 +67,144 @@ void *handle_client(void *socket_desc){
 
         // Obsługa żądań klienta
         if (action == -1){
-            color("blue"); ("Exit \n"); color("reset");
+            color("blue"); printf("Exit \n"); color("reset");
             break;
         }
 
         else if (action == 100){
             color("blue"); printf("signup \n"); color("reset");
+
+            // Inicjalizacja buforów
+            char name[BUFFER_SIZE];     bzero(name,sizeof(name));
+            char surname[BUFFER_SIZE];  bzero(surname,sizeof(surname));
+            char nick[BUFFER_SIZE];     bzero(nick,sizeof(nick));
+            char password[BUFFER_SIZE]; bzero(password,sizeof(password));
+
+            // Odebranie danych
+            recv(client_socket,name,sizeof(name),0);
+            recv(client_socket,surname,sizeof(surname),0);
+            recv(client_socket,nick,sizeof(nick),0);
+            recv(client_socket,password,sizeof(password),0);
+
+            int flag = 0;
+            char line[BUFFER_SIZE * columns];
+            char column[BUFFER_SIZE];
+            int column_index = nick_index;
+
+            // Test unikalności nicku
+            pthread_mutex_lock(&file_mutex);
+            FILE *file = fopen(LOGIN_FILE, "r");
+            while(fgets(line,sizeof(line),file)){
+                char *token = strtok(line,",");
+                int current_index = 0;
+
+                while(token){
+                    if (current_index == column_index){
+                        strncpy(column, token, BUFFER_SIZE-1);
+                        column[BUFFER_SIZE-1] = '\0';
+
+                        column[strcspn(column,"\r\n")] = '\0';
+                        if(strcmp(column, nick) == 0){
+                            flag = 110;
+                            break;
+                        }
+                    }
+                    token = strtok(NULL,",");
+                    current_index += 1;
+                }
+                if (flag == 110){
+                    break;
+                }
+            }
+            if (flag == 110){
+                send(client_socket, &flag, sizeof(flag), 0);
+                color("red"); printf("Konto o tym nicku już istnieje.\n"); color("reset");
+                fclose(file);
+                pthread_mutex_unlock(&file_mutex);
+            }
+            else{
+                flag = 120;
+                send(client_socket, &flag, sizeof(flag), 0);
+                color("green"); printf("Stworzono nowe konto.\n"); color("reset");
+                fclose(file);
+                FILE *file = fopen(LOGIN_FILE,"a");
+                    if (file != NULL){
+                        fprintf(file, "%s,%s,%s,%s\n", name, surname, nick, password);
+                        fclose(file);
+                    }
+                pthread_mutex_unlock(&file_mutex);
+            }
         }
 
         else if (action == 200){
             color("blue"); printf("login \n"); color("reset");
+
+            // Inicjalizacja buforów
+            char nick[BUFFER_SIZE];     bzero(nick,sizeof(nick));
+            char password[BUFFER_SIZE]; bzero(password,sizeof(password));
+
+            // Odebranie danych
+            recv(client_socket,nick,sizeof(nick),0);
+            recv(client_socket,password,sizeof(password),0);
+
+            int flag = 210;
+            char line[BUFFER_SIZE * columns];
+            char column[BUFFER_SIZE];
+            int column_index1 = nick_index;
+            int column_index2 = password_index;
+
+            // Test unikalności nicku
+            pthread_mutex_lock(&file_mutex);
+            FILE *file = fopen(LOGIN_FILE, "r");
+            while(fgets(line,sizeof(line),file)){
+                char *token = strtok(line,",");
+                int current_index = 0;
+
+                while(token){
+                    if (current_index == column_index1){
+                        strncpy(column, token, BUFFER_SIZE-1);
+                        column[BUFFER_SIZE-1] = '\0';
+
+                        column[strcspn(column,"\r\n")] = '\0';
+                        if(strcmp(column, nick) == 0){
+                            token = strtok(NULL,",");
+                            current_index += 1;
+
+                            column[BUFFER_SIZE-1] = '\0';
+                            column[strcspn(column,"\r\n")] = '\0';
+
+                            if(strcmp(column, password) == 0){
+                                flag = 230;
+                                break;
+                            }
+                            else{
+                                flag = 220;
+                                break;
+                            }
+                        }
+                    }
+                    token = strtok(NULL,",");
+                    current_index += 1;
+                }
+                if (flag == 220 || flag == 230){
+                    break;
+                }
+            }
+            fclose(file);
+            pthread_mutex_unlock(&file_mutex);
+
+            if (flag == 210){
+                send(client_socket, &flag, sizeof(flag), 0);
+                color("red"); printf("Nick nie istnieje.\n"); color("reset");
+            }
+            else if (flag == 220){
+                send(client_socket, &flag, sizeof(flag), 0);
+                color("red"); printf("Niepoprawne hasło.\n"); color("reset");
+            }
+            else if (flag == 230){
+                send(client_socket, &flag, sizeof(flag), 0);
+                color("green"); printf("Zalogowano.\n"); color("reset");
+            }
         }
 
         else if (action == 300){

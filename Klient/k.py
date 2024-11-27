@@ -96,11 +96,44 @@ def main():
         # Act on action
         if act == "signup":
             # 1. Tworzenie konta
-            print("\033[33mImplement signup here: \033[0m")
+            name = input("Podaj imię:")
+            client_socket.send(name.encode('utf-8'))
+
+            surname = input("Podaj Nazwisko: ")
+            client_socket.send(surname.encode('utf-8'))
+
+            nick = input("Podaj nazwę użytkownika:")
+            client_socket.send(nick.encode('utf-8'))
+
+            password = input("Podaj hasło:")
+            client_socket.send(password.encode('utf-8'))
+
+            data = client_socket.recv(4)
+            if data:
+                mess = struct.unpack('<i', data)[0]
+            if mess == 110:
+                print("\033[33mKonto o podanym nicku już istnieje!\033[0m")
+            elif mess == 120:
+                print("\033[33mPomyślnie utworzono konto użytkownika!\033[0m")
+
 
         elif act == "login":
             # 2. Logowanie
-            print("\033[33mImplement login here: \033[0m")
+            nick = input("Podaj nazwę użytkownika:")
+            client_socket.send(nick.encode('utf-8'))
+
+            password = input("Podaj hasło:")
+            client_socket.send(password.encode('utf-8'))
+
+            data = client_socket.recv(4)
+            if data:
+                mess = struct.unpack('<i', data)[0]
+            if mess == 210:
+                print("Konto o podanym nicku nie istnieje !")
+            elif mess == 220:
+                print("Wprowadzono niepoprawne hasło !")
+            elif mess == 230:
+                print("Pomyślnie zalogowano !")
 
         elif act == "main":
             # 3. Strona Główna
