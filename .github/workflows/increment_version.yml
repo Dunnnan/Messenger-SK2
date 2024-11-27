@@ -34,6 +34,7 @@ jobs:
             echo "increment=MINOR" >> $GITHUB_ENV
           else
             echo "increment=PATCH" >> $GITHUB_ENV
+          fi
 
       # Krok 4: Inkrementacja wersji w zależności od typu zmiany
       - name: Increment version
