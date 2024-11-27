@@ -1,0 +1,75 @@
+name: Increment Version
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write  # pozwala na zapisywanie w repozytorium (commit, push)
+  id-token: write   # pozwala na operacje wymagające tokenów ID
+
+jobs:
+  increment-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Read current version
+        id: read_version
+        run: |
+          if [ -f VERSION ]; then
+            echo "version=$(cat VERSION)" >> $GITHUB_ENV
+          else
+            echo "version=0.0.0" >> $GITHUB_ENV
+          fi
+
+      - name: Determine version increment
+        id: determine_increment
+        run: |
+          if git log -1 --pretty=%B | grep -q "BREAKING CHANGE"; then
+            echo "increment=MAJOR" >> $GITHUB_ENV
+          elif git log -1 --pretty=%B | grep -q "feat"; then
+            echo "increment=MINOR" >> $GITHUB_ENV
+          else
+            echo "increment=PATCH" >> $GITHUB_ENV
+          fi
+
+      - name: Increment version
+        id: increment_version
+        run: |
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$version"
+          if [ "$increment" = "MAJOR" ]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [ "$increment" = "MINOR" ]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+          echo "new_version=${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
+
+      - name: Update version file
+        run: echo "$new_version" > VERSION
+
+      - name: Commit and push updated version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "Increment version to $new_version"
+          
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push new Git tag
+        run: |
+          git tag "v$new_version"
+          git push origin "v$new_version"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
