@@ -65,7 +65,7 @@ jobs:
           git add VERSION
           git commit -m "Increment version to $new_version"
           
-          # Autoryzacja za pomocą GITHUB_TOKEN
+          # Autoryzacja za pomocą PAT (GH_TOKEN)
           git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main --force
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -76,4 +76,4 @@ jobs:
           git tag "v$new_version"
           git push origin "v$new_version"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
