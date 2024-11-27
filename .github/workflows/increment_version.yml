@@ -66,9 +66,9 @@ jobs:
           git commit -m "Increment version to $new_version"
           
           # Autoryzacja za pomocą GITHUB_TOKEN
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main --force
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main --force
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # Krok 7: Tworzenie tagu Git i wypychanie go do repozytorium
       - name: Create and push new Git tag
