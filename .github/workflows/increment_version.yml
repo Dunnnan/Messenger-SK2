@@ -3,18 +3,20 @@ name: Increment Version
 on:
   push:
     branches:
-      - main  # Workflow uruchamiany przy pushu do gałęzi `main`
+      - main
+
+permissions:
+  contents: write  # pozwala na zapisywanie w repozytorium (commit, push)
+  id-token: write   # pozwala na operacje wymagające tokenów ID
 
 jobs:
   increment-version:
     runs-on: ubuntu-latest
 
     steps:
-      # Krok 1: Pobranie kodu z repozytorium
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Krok 2: Odczytanie obecnej wersji z pliku VERSION
       - name: Read current version
         id: read_version
         run: |
@@ -24,7 +26,6 @@ jobs:
             echo "version=0.0.0" >> $GITHUB_ENV
           fi
 
-      # Krok 3: Zdefiniowanie, jaką część wersji zwiększyć (MAJOR, MINOR, PATCH)
       - name: Determine version increment
         id: determine_increment
         run: |
@@ -36,7 +37,6 @@ jobs:
             echo "increment=PATCH" >> $GITHUB_ENV
           fi
 
-      # Krok 4: Inkrementacja wersji w zależności od typu zmiany
       - name: Increment version
         id: increment_version
         run: |
@@ -53,11 +53,9 @@ jobs:
           fi
           echo "new_version=${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
 
-      # Krok 5: Zapisanie nowej wersji do pliku VERSION
       - name: Update version file
         run: echo "$new_version" > VERSION
 
-      # Krok 6: Commitowanie i wypychanie nowej wersji do repozytorium
       - name: Commit and push updated version
         run: |
           git config user.name "github-actions[bot]"
@@ -65,15 +63,13 @@ jobs:
           git add VERSION
           git commit -m "Increment version to $new_version"
           
-          # Autoryzacja za pomocą PAT (GH_TOKEN)
-          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main --force
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main --force
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Krok 7: Tworzenie tagu Git i wypychanie go do repozytorium
       - name: Create and push new Git tag
         run: |
           git tag "v$new_version"
           git push origin "v$new_version"
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
