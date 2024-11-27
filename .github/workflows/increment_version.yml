@@ -3,7 +3,7 @@ name: Increment Version
 on:
   push:
     branches:
-      - main
+      - main  # Workflow uruchamiany przy pushu do gałęzi `main`
 
 jobs:
   increment-version:
@@ -34,7 +34,6 @@ jobs:
             echo "increment=MINOR" >> $GITHUB_ENV
           else
             echo "increment=PATCH" >> $GITHUB_ENV
-          fi
 
       # Krok 4: Inkrementacja wersji w zależności od typu zmiany
       - name: Increment version
@@ -64,10 +63,16 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add VERSION
           git commit -m "Increment version to $new_version"
-          git push origin main
+          
+          # Autoryzacja za pomocą GITHUB_TOKEN
+          git push https://github.com/${{ github.repository }}.git HEAD:main --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Krok 7: Tworzenie tagu Git i wypychanie go do repozytorium
       - name: Create and push new Git tag
         run: |
           git tag "v$new_version"
           git push origin "v$new_version"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
