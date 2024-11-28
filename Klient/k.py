@@ -17,7 +17,7 @@ def action(action):
         # 1 Tworzenie konta
         action = 100
     elif action == "login":
-        # 2 Logowanie
+        # 2 Logowanie 
         action = 200
     elif action == "main":
         # 3 Strona Główna
