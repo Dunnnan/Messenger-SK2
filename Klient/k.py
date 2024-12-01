@@ -17,7 +17,7 @@ def action(action):
         # 1 Tworzenie konta
         action = 100
     elif action == "login":
-        # 2 Logowanie 
+        # 2 Logowanie
         action = 200
     elif action == "main":
         # 3 Strona Główna
@@ -47,6 +47,75 @@ def action(action):
         return(-1)
 
     return(action)
+
+def receive_friends(client_socket,nazwyZnajomi,statusZnajomi):
+    client_socket.settimeout(1)
+
+    # Wyczyść listy znajomych
+    nazwyZnajomi.clear()
+    statusZnajomi.clear()
+
+    while True:
+        try:
+            mess = client_socket.recv(1024).decode("utf-8",errors='replace')
+            if mess:
+                print(f"friend: {mess}")
+                nazwyZnajomi.append(mess)
+            else:
+                print("Server disconnected")
+                break
+
+            if mess:
+                mess = client_socket.recv(1024).decode("utf-8",errors='replace')
+                print(f"status: {mess}")
+            else:
+                print("Server disconnected")
+                break
+
+        except socket.timeout:
+            if not nazwyZnajomi:
+                print("\033[31mUżytkownik nie posiada żadnych znajomych !\033[0m")
+            print("Server timed out")
+            break
+        except Exception as e:
+            print(f"An error occurred while receiving friends: {e}")
+            break
+
+def receive_history(client_socket,nazwyChaty,idChaty):
+    client_socket.settimeout(1)
+
+    # Wyczyść listy chatów
+    nazwyChaty.clear()
+    idChaty.clear()
+
+    while True:
+        try:
+            # Odbierz nazwy chatów
+            mess = client_socket.recv(1024).decode("utf-8",errors='replace')
+            if mess:
+                print(f"chat: {mess}")
+                nazwyChaty.append(mess)
+            else:
+                print("Server disconnected")
+                break
+
+            # Odbierz identyfikatory chatów
+            mess = client_socket.recv(1024).decode("utf-8",errors='replace')
+            if mess:
+                print(f"chat: {mess}")
+                idChaty.append(mess)
+            else:
+                print("Server disconnected")
+                break
+
+        except socket.timeout:
+            if not nazwyChaty:
+                print("\033[31mUżytkownik nie posiada żadnych chatów !\033[0m")
+            print("Receiving history timed out")
+            break
+        except Exception as e:
+            print(f"An error occured while receiving history: {e}")
+            break
 
 def receive_message(client_socket):
     client_socket.settimeout(1)
@@ -93,6 +162,7 @@ def main():
             break
 
 
+
         # Act on action
         if act == "signup":
             # 1. Tworzenie konta
@@ -109,12 +179,13 @@ def main():
             client_socket.send(password.encode('utf-8'))
 
             data = client_socket.recv(4)
-            mess = struct.unpack('<i', data)[0]
-            
+            if data:
+                mess = struct.unpack('<i', data)[0]
             if mess == 110:
                 print("\033[33mKonto o podanym nicku już istnieje!\033[0m")
             elif mess == 120:
                 print("\033[33mPomyślnie utworzono konto użytkownika!\033[0m")
+
 
 
         elif act == "login":
@@ -126,8 +197,8 @@ def main():
             client_socket.send(password.encode('utf-8'))
 
             data = client_socket.recv(4)
-            mess = struct.unpack('<i', data)[0]
-            
+            if data:
+                mess = struct.unpack('<i', data)[0]
             if mess == 210:
                 print("Konto o podanym nicku nie istnieje !")
             elif mess == 220:
@@ -135,9 +206,30 @@ def main():
             elif mess == 230:
                 print("Pomyślnie zalogowano !")
 
+
+
         elif act == "main":
             # 3. Strona Główna
-            print("\033[33mImplement main page here: \033[0m")
+            try:
+                print("\033[33mPodaj swój nick: \033[0m")
+                # W przyszłości nick będzie przypisywany na etapie tworzenia konta / logowania
+                nick = input()
+                client_socket.send(nick.encode('utf-8'))
+
+                # Zainicjuj listy na chaty użytkownika
+                nazwyChaty = []
+                idChaty = []
+
+                # Otwórz wątek do odbierania chatów użytkownika
+                receive_thread = threading.Thread(target=receive_history, args=(client_socket,nazwyChaty,idChaty,))
+                receive_thread.start()
+                receive_thread.join()
+
+            except Exception as e:
+                print(f"An error occured while opening the history thread: {e}")
+                break
+
+
 
         elif act == "chat":
             # 4. Chat
@@ -153,7 +245,21 @@ def main():
 
         elif act == "friends":
             # 5. Wyświetlanie znajomych
-            print("\033[33mDisplay friends here: \033[0m")
+            try:
+                print("\033[33mPodaj swój nick: \033[0m")
+                # W przyszłości nick będzie przypisywany na etapie tworzenia konta / logowania
+                nick = input()
+                client_socket.send(nick.encode('utf-8'))
+
+                nazwyZnajomi = []
+                statusZnajomi = []
+
+                receive_thread = threading.Thread(target=receive_friends, args=(client_socket,nazwyZnajomi,statusZnajomi,))
+                receive_thread.start()
+                receive_thread.join()
+            except Exception as e:
+                print(f"An error occured while receiving friends: {e}")
+                break
 
         elif act == "search":
             # 6. Wyszukiwanie znajomych
