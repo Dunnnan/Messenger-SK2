@@ -24,6 +24,19 @@ int nick_index = 2;
 int password_index = 3;
 int columns = 4;
 
+// Zmienne do przetwarzania "nick_chats.txt"
+int chatname_index = 0;
+int chathistory_index = 1;
+int p_columns = 2;
+
+// Zmienne do przetwarzania "nick_friends.txt"
+int invitation_index = 0;
+int username_index = 0;
+int f_columns = 2;
+
+// Zmienne do przetwarzania "chat_history.txt"
+
+
 pthread_mutex_t file_mutex;
 
 // Funkcje pomocnicze
@@ -209,6 +222,52 @@ void *handle_client(void *socket_desc){
 
         else if (action == 300){
             color("blue"); printf("main \n"); color("reset");
+            char nick[1048]; bzero(nick,sizeof(nick));
+            char filepath[2200]; bzero(filepath,sizeof(filepath)); strcpy(filepath,"users/");
+            char buffer[BUFFER_SIZE]; bzero(buffer,sizeof(buffer));
+
+            recv(client_socket,nick,sizeof(nick),0);
+
+            int flag = 320;
+            char line[BUFFER_SIZE * p_columns];
+            char column[BUFFER_SIZE];
+
+
+            pthread_mutex_lock(&file_mutex);
+            FILE *file = fopen(strcat(filepath,strcat(nick,".txt")),"a+");
+            if (file != NULL){
+                while(fgets(line,sizeof(line), file)){
+
+                    char *token = strtok(line,",");
+
+                    strncpy(column, token, BUFFER_SIZE-1);
+                    column[BUFFER_SIZE-1] = '\0';
+                    column[strcspn(column, "\r\n")] = '\0';
+
+                    send(client_socket,column,sizeof(column),0);
+
+                    token = strtok(NULL,",");
+
+                    strncpy(column,token, BUFFER_SIZE-1);
+                    column[BUFFER_SIZE-1] = '\0';
+                    column[strcspn(column, "\r\n")] = '\0';
+
+                    send(client_socket,column,sizeof(column),0);
+
+                    flag = 310;
+                }
+            }
+
+            fclose(file);
+            pthread_mutex_unlock(&file_mutex);
+
+            if (flag == 310){
+                color("green"); printf("Przesłano chaty użytkownika.\n"); color("reset");
+            }
+            else if (flag == 320){
+                color("red"); printf("Użytkownik nie posiada żadnych chatów.\n"); color("reset");
+            }
+
         }
 
         else if (action == 400){
@@ -227,6 +286,57 @@ void *handle_client(void *socket_desc){
 
         else if (action == 500){
             color("blue"); printf("friends \n"); color("reset");
+
+            char nick[1048]; bzero(nick,sizeof(nick));
+            char filepath[2200]; bzero(filepath,sizeof(filepath)); strcpy(filepath,"friends/");
+            char buffer[BUFFER_SIZE]; bzero(buffer,sizeof(buffer));
+
+            recv(client_socket,nick,sizeof(nick),0);
+
+            int flag = 520;
+
+            char line[BUFFER_SIZE * f_columns];
+            char column[BUFFER_SIZE];
+
+            pthread_mutex_lock(&file_mutex);
+            FILE *file = fopen(strcat(filepath,strcat(nick,".txt")),"a+");
+            if (file != NULL){
+                while(fgets(line,sizeof(line), file)){
+
+                    char *token = strtok(line,",");
+
+                    printf("TOKEN: \n");
+
+                    strncpy(column, token, BUFFER_SIZE-1);
+                    printf("column: %s \n",column);
+                    column[BUFFER_SIZE-1] = '\0';
+                    column[strcspn(column, "\r\n")] = '\0';
+
+                    send(client_socket,column,sizeof(column),0);
+
+                    token = strtok(NULL,",");
+
+                    strncpy(column,token, BUFFER_SIZE-1);
+                    printf("column: %s \n",column);
+                    column[BUFFER_SIZE-1] = '\0';
+                    column[strcspn(column, "\r\n")] = '\0';
+
+                    send(client_socket,column,sizeof(column),0);
+
+                    flag = 510;
+                }
+            }
+
+            fclose(file);
+            pthread_mutex_unlock(&file_mutex);
+
+            if (flag == 510){
+                color("green"); printf("Przesłano znajomych użytkownika.\n"); color("reset");
+            }
+            else if (flag == 520){
+                color("red"); printf("Użytkownik nie posiada żadnych znajomych.\n"); color("reset");
+            }
+
         }
 
         else if (action == 600){
