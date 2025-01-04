@@ -1,1 +1,6 @@
 Święty Mikołaj,f
+Nowe,n
+Tak,f
+3m,n
+wwmm,f
+Batman,n

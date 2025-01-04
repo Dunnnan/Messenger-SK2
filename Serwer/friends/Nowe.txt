@@ -1,0 +1,4 @@
+tak,n
+wwmm,f
+nie,f
+Święty Mikołaj,f
