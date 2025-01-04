@@ -69,33 +69,33 @@ nickUżytkownika2,nickUżytkownika0-nickUżytkownika2
 
 ``` Tworzenie konta : 100 ```
 
-***Wejście serwera***
-```name``` - imię użytkownika tworzącego konto.
-```surname``` - nazwisko użytkownika tworzącego konto.
-```nick``` - nick użytkownika tworzącego konto ***(unikalny w systemie)***.
-```password``` - hasło użytkownika tworzącego konto.
+***Wejście serwera*** <br>
+```name``` - imię użytkownika tworzącego konto.<br>
+```surname``` - nazwisko użytkownika tworzącego konto.<br>
+```nick``` - nick użytkownika tworzącego konto ***(unikalny w systemie)***.<br>
+```password``` - hasło użytkownika tworzącego konto.<br>
 
-***Działanie serwera***
+***Działanie serwera***<br>
 Sprawdza unikalność przesłanego nicku w systemie i tworzy konto użytkownika, wpisując wejście jako pojedynczą linię w pliku ***users.txt***.
 
-***Wyjście serwera***
+***Wyjście serwera***<br>
 Flaga mówiąca o powodzeniu stworzenia konta:
 ```
 flag = 110 // Konto o tym nicku już istnieje
 flag = 120 // Konto zostało utworzone.
 ```
 
-
+##
 ``` Logowanie : 200 ```
 
-***Wejście serwera***
-```nick``` - nick użytkownika logującego się ***(unikalny w systemie)***.
-```password``` - hasło użytkownika logującego sie.
+***Wejście serwera***<br>
+```nick``` - nick użytkownika logującego się ***(unikalny w systemie)***.<br>
+```password``` - hasło użytkownika logującego sie.<br>
 
-***Działanie serwera***
+***Działanie serwera***<br>
 Sprawdza poprawność przesłanych danych i umożliwia uczestnikowi korzystanie z aplikacji.
 
-***Wyjście serwera***
+***Wyjście serwera***<br>
 Flaga mówiąca o powodzeniu logowania:
 ```
 flag = 210 // Konto o tym nicku nie istnieje.
@@ -103,111 +103,134 @@ flag = 220 // Niepoprawne hasło.
 flag = 230 // Zalogowano.
 ```
 
-
+##
 ``` Strona główna : 300 ```
 
-***Wejście serwera***
+***Wejście serwera***<br>
 ```nick``` - nick użytkownika.
 
-***Działanie serwera***
-Serwer otwiera plik użytkownika, w którym znajduje się chaty, których jest uczestnikiem i przesyła mu jego nazwy (zarówno tą do wyświetlenia jak i nazwę pliku tego chatu na serwerze).
+***Działanie serwera***<br>
+Otwiera plik użytkownika, w którym znajduje się chaty, których jest uczestnikiem i przesyła mu jego nazwy (zarówno tą do wyświetlenia jak i nazwę pliku tego chatu na serwerze).
 
-***Wyjście serwera***
+***Wyjście serwera***<br>
 Pary nazw chatów użytkownika - nieparzyste to nazwy do wyświetlenia, a parzyste to nazwy plików na serwerze (dalej będziemy posługiwać się terminem identyfikator chatu).
 
-
+##
 ``` Wyświetlenie chatu : 400 ```
 
-***Wejście serwera***
+***Wejście serwera***<br>
 ```chatName``` - identyfikator chatu, który użytkownik chce wyświetlić.
 
-***Działanie serwera***
-Serwer otwiera plik o przesłanym identyfikatorze i odsyła użytkownikowi jego zawartość linia po linii.
+***Działanie serwera***<br>
+Otwiera plik o przesłanym identyfikatorze i odsyła użytkownikowi jego zawartość linia po linii.
 
-***Wyjście serwera***
+***Wyjście serwera***<br>
 Zawartość chatu, którego identyfikator przesłał użytkownik.
 
 
-
+##
 ``` Znajomi : 500 ```
 
-***Wejście serwera***
+***Wejście serwera***<br>
 ```nick``` - nick użytkownika.
 
-***Działanie serwera***
-Serwer otwiera plik użytkownika, w którym znajdują się nicki jego znajomych oraz zaproszenia do znajomych. 
+***Działanie serwera***<br>
+Otwiera plik użytkownika, w którym znajdują się nicki jego znajomych oraz zaproszenia do znajomych. Odsyła użytkownikowi jego zawartość linia po linii
 
-***Wyjście serwera***
-Pary nick i identyfikator f/n informujący o tym czy dany nick to znajomy, czy użytkownik wysyłający zaproszenie do znajomych.
+***Wyjście serwera***<br>
+Pary nick i identyfikator (f/n) informujący o tym czy dany nick to znajomy, czy użytkownik wysyłający zaproszenie do znajomych.
 
 
-
+##
 ``` Wyszukiwanie użytkowników : 600 ```
 
 
+***Wejście serwera***<br>
+```selfnick``` - nick użytkownika.<br>
+```nick``` - nick, którego użytkownik szuka w wyszukiwarce.<br>
 
-***Wejście serwera***
+***Działanie serwera***<br>
+Przeszukuje przestrzeń użytkowników, licząc stopień podobieństwa do szukanego nicku oraz określając czy dany użytkownik jest znajomym wyszukiwającego.
 
-***Działanie serwera***
+***Wyjście serwera***<br>
+Trójki nick, identyfikator (f/n), stopień pokrewieństwa (im wyższy tym większe pokrewieństwo).
 
-***Wyjście serwera***
 
+##
 ``` Zaproszenie użytkowników : 700 ```
 
 
+***Wejście serwera***<br>
+```selfnick``` - nick użytkownika wysyłającego zaproszenie.<br>
+```friendnick``` - nick użytkownika, do którego skierowane jest zaproszenie.<br>
 
-***Wejście serwera***
+***Działanie serwera***<br>
+Zapisuje w plikach ```/friends``` użytkowników linie ```nick,n``` oznaczającą nierozpatrzone jeszcze zaproszenie do znajomych.
 
-***Działanie serwera***
-
-***Wyjście serwera***
-
+***Wyjście serwera***<br>
+Brak.
+##
 ``` Akceptacja zaproszenia : 710 ```
 
 
+***Wejście serwera***<br>
+```selfnick``` - nick użytkownika akceptującego zaproszenie.<br>
+```friendnick``` - nick użytkownika, którego zaproszenie jest akceptowane.<br>
 
-***Wejście serwera***
+***Działanie serwera***<br>
+Zamienia status nierozpatrzonego zaproszeia na znajomość (zmiana ***n*** na ***f*** w plikach ```/friends```), tworzy nowy chat w ```/chats``` oraz dopisuje użytkownikom ten chat do ich własnych list chatów.
 
-***Działanie serwera***
+***Wyjście serwera***<br>
+Brak.
 
-***Wyjście serwera***
-
+##
 ``` Odrzucenie zaproszenia : 720 ```
 
 
+***Wejście serwera***<br>
+```selfnick``` - nick użytkownika odrzucającego zaproszenie.<br>
+```friendnick``` - nick użytkownika, którego zaproszenie jest odrzucane.<br>
 
-***Wejście serwera***
+***Działanie serwera***<br>
+Usuwa zaproszenie do znajomych z plików ```/friends``` obu użytkowników.
 
-***Działanie serwera***
+***Wyjście serwera***<br>
+Brak.
 
-***Wyjście serwera***
-
-
-
+##
 ``` Stworzenie grupowego chatu : 800 ```
 
 
+***Wejście serwera***<br>
+```selfnick``` - nick użytkownika tworzącego grupowy chat.<br>
+```friendnick1``` - nick użytkownika, który będzie członkiem grupowego chatu.<br>
+```friendnick2``` - nick użytkownika, który będzie członkiem grupowego chatu.<br>
 
-***Wejście serwera***
 
-***Działanie serwera***
+***Działanie serwera***<br>
+Tworzy nowy chat w ```/chats``` oraz dopisuje użytkownikom ten chat do ich własnych list chatów.
 
-***Wyjście serwera***
+***Wyjście serwera***<br>
+Brak.
 
+##
 ``` Wysłanie wiadomości : 0 ```
 
 
+***Wejście serwera***<br>
+```nick``` - nick użytkownika wysyłającego wiadomość.<br>
+```chatName``` - identyfikator chatu, na który jest wysyłana wiadomość.<br>
+```message``` - treść wysyłanej wiadomości.<br>
 
-***Wejście serwera***
+***Działanie serwera***<br>
+Zapisuje wiadomość w chacie wskazanym przez użytkownika.
 
-***Działanie serwera***
+***Wyjście serwera***<br>
+Brak.
 
-***Wyjście serwera***
-
-
-
+##
 ``` Wyjście : -1 ```
-
+Kończy obsługę żądań.
 
 
 
