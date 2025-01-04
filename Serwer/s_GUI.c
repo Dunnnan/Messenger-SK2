@@ -197,6 +197,7 @@ void *handle_client(void *socket_desc){
 
                         if(strcmp(column, nick) == 0){
                             token = strtok(NULL,",");
+                            strncpy(column, token, BUFFER_SIZE-1);
                             current_index += 1;
 
                             column[BUFFER_SIZE-1] = '\0';
