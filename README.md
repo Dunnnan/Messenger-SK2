@@ -23,6 +23,8 @@
 # Protokół
 
 ## Struktura plików
+##
+
 ```
 ├── chats
 │   ├── Gwiazdka-Rudolf.txt
@@ -66,6 +68,7 @@ nickUżytkownika2,nickUżytkownika0-nickUżytkownika2
 ```
 
 ## Żądania
+##
 
 ``` Tworzenie konta : 100 ```
 
@@ -214,6 +217,7 @@ Tworzy nowy chat w ```/chats``` oraz dopisuje użytkownikom ten chat do ich wła
 Brak.
 
 ##
+
 ``` Wysłanie wiadomości : 0 ```
 
 
@@ -232,6 +236,120 @@ Brak.
 ``` Wyjście : -1 ```
 Kończy obsługę żądań.
 
+##
+## Szkielet klienta
+##
 
+## Ważne ogólne rzeczy, które trzeba uwzględnić
+***Odświeżanie cykliczne - Niektóre bloki powinny być wywoływane cyklicznie i samoistnie - 300, 400, 500, aby zapewnić aktualność danych po stronie użytkownika. (Te bloki też powinny być wykonane od razu po zalogowaniu)*** <br><br>
+***Odświeżanie po zmianach - Dodatkowo po każdej operacji zmiany danych - 700, 710, 720, 800, 0, również powinno mieć miejsce odświeżenie, chyba że cykl odświeżenia jest na tyle krótki, iż brak tego aspektu będzie niezauważalny dla użytkownika*** <br><br>
+***Menu rozwijane - Wybór chatu z menu rozwijanego powinien umożliwić przypisanie id tego chatu do jakiejś zmiennej currentChat albo currentChatIndex dla łatwości wysyłania tego id do serwera (tak samo nick użytkownika)*** <br><br>
+***Wyszukiwarka - Przyjąłem, że wyszukujemy użytkowników, którzy jeszcze nie są naszymi znajomymi, albo nie wysłali nam zaproszenia (lub vice versa), stąd 3 listy zwracane przez serwer*** <br><br>
+***Przypisywanie zmiennych - zmienne, które są aktualnie podawane z klawiatury w celu przesłania serwerowi (jak np. w 700, 710, 720 nicki użytkowników, których dotyczą zaproszenia) powinny być przypisywane w momencie klikięcia konkretnego guzika w aplikacji (feeedback pls czy możliwe)***
+
+
+##
+``` Strona główna : 300 ```
+
+***Odbiera od serwera***<br>
+```nazwyChaty``` - nazwy chatów użytkownika - do wyświetlenia w rozwijanym menu.<br>
+```idChaty``` - id chatów użytkownika - do przesłania serwerowi kiedy będziemy chcieli otworzyć konkretny chat (zażądać przesłania zawartości).<br>
+
+***Funkcjonalność***<br>
+Zapisuje chaty użytkownika po stronie klienta - ten blok powinien być wykonywany co jakiś czas (odświeżanie), aby zapewnić aktualność danych użytkownika.
+
+
+##
+``` Wyświetlenie chatu : 400 ```
+
+***Odbiera od serwera***<br>
+```mess``` - pojedyncza linia chatu.<br>
+
+***Funkcjonalność***<br>
+Klient odbiera pojedyncze linie od serwera reprezentujące pojedynczą wiadomość danego użytkownika na chacie.
+
+
+##
+``` Znajomi : 500 ```
+
+***Odbiera od serwera***<br>
+```nazwyZnajomi``` - nicki znajomych użytkownika.<br>
+```statusZnajomi``` - f - znajomy | n - zaproszenie do znajomych.<br>
+
+***Funkcjonalność***<br>
+Zapisuje znajomych użytkownika po stronie klienta - ten blok powinien być wykonywany co jakiś czas (odświeżanie), aby zapewnić aktualność danych użytkownika. 
+
+
+
+##
+``` Wyszukiwanie użytkowników : 600 ```
+
+
+***Odbiera od serwera***<br>
+```nickiUzytkownicy``` - nicki użytkowników w systemie.<br>
+```strcmpUzytkownicy``` - stopień podobieństwa do wyszukiwanej frazy (im wyższy tym lepszy)<br>
+```znajomiUzytkownicy``` - f - znajomy lub zaproszenie do znajomych | n - nie widnieje.<br><br>
+
+***Funkcjonalność***<br>
+Odbiera i zapisuje w listach wyniki wyszukiwania po stronie serwera. Dodatkowo sortuje listy malejąco po stopniu podobieństwa do szukanej frazy. Ostatnia lista ```znajomiUzytkownicy``` służy do pomijania użytkowników już wpisanych w pliku ```/friends``` osoby zgłaszającej wyszukiwanie. 
+
+
+##
+``` Zaproszenie użytkowników : 700 ```
+
+
+***Odbiera od serwera***<br>
+Brak.
+
+***Funkcjonalność***<br>
+Planowo funkcjonalność pod guzikiem Zaproś, czyli przesłanie własnego nicku i nicku osoby zapraszanej.
+
+##
+``` Akceptacja zaproszenia : 710 ```
+
+
+***Odbiera od serwera***<br>
+Brak.
+
+***Funkcjonalność***<br>
+Planowo funkcjonalność pod guzikiem Zaakceptuj, czyli przesłanie własnego nicku i nicku osoby, od której zaproszenie do znajomych akceptujemy.
+
+
+##
+``` Odrzucenie zaproszenia : 720 ```
+
+
+***Odbiera od serwera***<br>
+Brak.
+
+***Funkcjonalność***<br>
+Planowo funkcjonalność pod guzikiem Odrzuć, czyli przesłanie własnego nicku i nicku osoby, od której zaproszenie do znajomych odrzucamy.
+
+
+##
+``` Stworzenie grupowego chatu : 800 ```
+
+
+***Odbiera od serwera***<br>
+Brak.
+
+***Funkcjonalność***<br>
+Planowo funkcjonalność pod guzikiem Group, finalizującego stworzenie grupy, czyli przesłanie ***! własnego nicku i nicków dwóch osób z którymi tworzymy chat grupowy. !***
+Ewentualnie można później rozszerzyć o możliwość nazwania grupy.
+
+##
+
+``` Wysłanie wiadomości : 0 ```
+
+
+***Odbiera od serwera***<br>
+Brak.
+
+***Funkcjonalność***<br>
+Planowo funkcjonalność pod guzikiem Wyślij, finalizującego wysłanie wiadomości na dany chat, czyli przesłanie własnego nicku, id chatu, na który wysyłamy wiadomość ***(np. zapisane w currentChat ze wstępu)*** oraz treści wiadomości.
+
+##
+``` Wyjście : -1 ```
+Kończy obsługę żądań.
 
 
