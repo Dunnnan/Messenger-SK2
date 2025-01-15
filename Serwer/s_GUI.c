@@ -510,7 +510,12 @@ void *handle_client(void *socket_desc){
                 }
                 if (file != NULL){
                     flag = 701;
-                    fprintf(file, "%s,n\n",nick);
+                    if (i == 0){
+                        fprintf(file, "%s,m\n",nick);
+                    }
+                    else{
+                        fprintf(file, "%s,n\n",nick);
+                    }
                 }
 
                 fclose(file);
