@@ -1,6 +1,5 @@
 w,m,wm,1
 mm,ww,wwmm,1
-Maciej,Wrzesień,Święty Mikołaj,tak
 Święty,Mikołaj,Tak,Nie
 1,2,3,4
 a,b,d,e
