@@ -8,7 +8,7 @@ class WorkerSignals(QObject):
     result = pyqtSignal(object)
     finished = pyqtSignal()
     error = pyqtSignal(tuple)
-    update_chat = pyqtSignal(list)  # Nowy sygnał do aktualizacji historii chatu
+    update_chat = pyqtSignal(list)
 
 # Klasa Worker zapewniając współbieżność wykonywanych żądań 
 class Worker(QRunnable):
@@ -25,6 +25,7 @@ class Worker(QRunnable):
             result = self.fn(*self.args, **self.kwargs)
             self.signals.result.emit(result)
         except:
+            pass
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))

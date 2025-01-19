@@ -352,15 +352,15 @@ class znajomi(object):
         # Sprawdzenie czy chat może zostać utworzony
         if mess0 == "" or mess1 == "":
             self.errorLabel.setStyleSheet("color: red;")
-            self.errorLabel.setText("Wszystkie pola muszą być wypełnione!")  # Komunikat o pustych polach
+            self.errorLabel.setText("Wszystkie pola muszą być wypełnione!")
             return
         elif mess0 == mess1:
             self.errorLabel.setStyleSheet("color: red;")
-            self.errorLabel.setText("Nie można utworzyć chatu o identycznych użytkownikach!")  # Komunikat o błędzie
+            self.errorLabel.setText("Nie można utworzyć chatu o identycznych użytkownikach!") 
             return
         elif result in self.idChaty:
             self.errorLabel.setStyleSheet("color: red;")
-            self.errorLabel.setText("Chat już istnieje!")  # Komunikat o istnieniu chatu
+            self.errorLabel.setText("Chat już istnieje!")
             return
 
         # Jeśli wszystkie warunki są spełnione, tworzymy chat
@@ -380,7 +380,7 @@ class znajomi(object):
         self.client_socket.send(mess0.encode('utf-8'))
 
         self.errorLabel.setStyleSheet("color: green;")
-        self.errorLabel.setText("Chat utworzony!")  # Komunikat o sukcesie
+        self.errorLabel.setText("Chat utworzony!")
     
     # Funkcja wspomagająca tworzenie grupy -> odbiera istniejące chaty
     def receive_chats(self):

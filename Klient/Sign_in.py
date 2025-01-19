@@ -8,10 +8,12 @@ import time
 
 class signin(object):
 
+    # Inicjalizacja klasy
     def __init__(self,Form,client_socket=None):
         self.client_socket = client_socket
         self.Form = Form
 
+    # Inicjalizacja GUI
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(266, 393)
@@ -85,6 +87,7 @@ class signin(object):
         self.threadpool = QtCore.QThreadPool()
         self.threadpool.setMaxThreadCount(1)
 
+    # Wpisanie podstawowych wartości do komórek
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Messenger", "Messenger"))
@@ -96,6 +99,7 @@ class signin(object):
         self.pushButton_2.setText(_translate("Form", "Utwórz konto"))
         self.lineEdit_4.setText(_translate("Form", ""))
     
+    # Funkcja tworząca wątek do logowania
     def login(self):
         self.nick = self.lineEdit.text()
         password = self.lineEdit_2.text()
@@ -104,7 +108,7 @@ class signin(object):
         #self.run_thread(self.send_to_server, data)
         self.run_thread(self.login_thread,data)
 
-
+    # Funkcja pozwalająca przejść do obsługi rejestracji
     def signup(self):
         # Zamykamy obecne okno
         open_windows=QtWidgets.QApplication.topLevelWidgets()
@@ -121,23 +125,24 @@ class signin(object):
 
         open_windows=QtWidgets.QApplication.topLevelWidgets()
 
-
+    # Funkcja umożliwiając logowanie
     def login_thread(self,data):
 
         # Jeśli dane są niepoprawne, ustawiamy komunikat o błędzie
         if data[0] == "" or data[1] == "":
             self.lineEdit_4.setText("Niepoprawne dane!")
-            self.lineEdit_4.setStyleSheet("color: red;")  # Ustawiamy tekst na czerwony
+            self.lineEdit_4.setStyleSheet("color: red;")
             return
+        
         # Wysyłanie danych do serwera
         flag = 200
         self.client_socket.send(struct.pack("i", flag))
         self.client_socket.send(data[0].encode('utf-8'))
-        time.sleep(1)  # Chwileczkę czekamy, żeby dane mogły zostać wysłane
+        time.sleep(1)
         self.client_socket.send(data[1].encode('utf-8'))
         
         # Po udanym wysłaniu komunikatu
-        self.lineEdit_4.setText("")  # Czyszczenie pola tekstowego
+        self.lineEdit_4.setText("")
         try:
             response = self.client_socket.recv(4)
             response=struct.unpack('<i', response)[0]
@@ -145,17 +150,21 @@ class signin(object):
         except Exception as e:
             return f"Error recv: {str(e)}, {response}\n"
         
+    # Funkcja zarządzająca wątkami
     def run_thread(self, function, *args):
         worker = Worker(function, *args)
         worker.signals.result.connect(self.handle_result)
         worker.signals.error.connect(self.handle_error)
         self.threadpool.start(worker)
 
+    # Sprawdzenie rezultatu --> czy dane są poprawne (zwrotka od serwera)
     def handle_result(self, result):
+        self.lineEdit_4.setText("")
         if result!=230:
             _translate = QtCore.QCoreApplication.translate
             self.lineEdit_4.setText(_translate("Form", "Niepoprawne dane!"))
         else:
+            self.lineEdit_4.setText("")
             open_windows=QtWidgets.QApplication.topLevelWidgets()
             for i in open_windows:
                 i.close()

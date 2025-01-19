@@ -6,14 +6,16 @@ import socket
 import struct
 import time
 
+
+# Klasa opisujaca glowne okno do komunikacji 
 class main_menu(object):
 
     def __init__(self,Form,nick,client_socket=None):
         self.client_socket = client_socket
         self.Form = Form
         self.nick = nick
-        self.signals = WorkerSignals()  # Używamy WorkerSignals zdefiniowanego dla Worker
-        self.signals.update_chat.connect(self.update_chat_history) # 
+        self.signals = WorkerSignals()
+        self.signals.update_chat.connect(self.update_chat_history) 
         self.message_to_send = False
         self.znajomi_flag = False
         self.nazwyChaty = []
@@ -57,10 +59,10 @@ class main_menu(object):
 
         # Etykieta do wyświetlania komunikatów
         self.label_status = QtWidgets.QLabel(parent=Form)
-        self.label_status.setGeometry(QtCore.QRect(70, 350, 281, 21))  # Pod polem do wiadomości
+        self.label_status.setGeometry(QtCore.QRect(70, 350, 281, 21))
         self.label_status.setObjectName("label_status")
-        self.label_status.setStyleSheet("color: red;")  # Czerwony tekst
-        self.label_status.setText("")  # Domyślnie pusta
+        self.label_status.setStyleSheet("color: red;")
+        self.label_status.setText("") 
 
         # Timer do odświeżania zawartości
         self.threadpool = QtCore.QThreadPool()
@@ -68,7 +70,7 @@ class main_menu(object):
         
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.run_receive_history_thread)
-        self.timer.start(2000)  # Co 2 sekundy
+        self.timer.start(2000)
 
         self.current_option = ""
 
@@ -76,15 +78,19 @@ class main_menu(object):
 
         self.run_thread(self.sequential_receive)
 
+
+    # Funkcja pomocnicza do wykonywania watkow oraz odswiezenia czatu
     def run_thread(self, function, *args):
         worker = Worker(function, *args)
         worker.signals.update_chat.connect(self.update_chat_history)
         self.threadpool.start(worker)
         self.threadpool.setMaxThreadCount(1)
 
+    # Wlaczenie watku do cyklicznego odswiezania 
     def run_receive_history_thread(self):
         self.run_thread(self.sequential_receive)
 
+    # CYkliczne odswiezanie chatow/wiadmosci
     def sequential_receive(self):
         self.current_option = self.comboBox.currentText()
         parts = self.current_option.split('-')
@@ -94,18 +100,23 @@ class main_menu(object):
         merged_option = '-'.join(parts)
         self.current_option = merged_option
 
-        if not self.znajomi_flag:
-            with QtCore.QMutexLocker(self.mutex):
-                self.receive_history()
-                nick_option= "-"+self.nick
-                if self.current_option != "" and not self.message_to_send and self.current_option != nick_option:
-                    self.send_to_server(400, self.current_option)
-                    self.receive_chat()
+        try:
+            if not self.znajomi_flag:
+                with QtCore.QMutexLocker(self.mutex):
+                    self.receive_chats()
+                    nick_option= "-"+self.nick
+                    if self.current_option != "" and not self.message_to_send and self.current_option != nick_option:
+                        self.send_selection_to_server(400, self.current_option)
+                        self.receive_history()
 
-                if self.message_to_send:
-                    self.send_message_to_server()  # Wyślij wiadomość
-                    self.message_to_send = False  # Resetuj flagę
+                    if self.message_to_send:
+                        time.sleep(0.5)
+                        self.send_message_to_server()
+                        self.message_to_send = False
+        except:
+            pass
 
+    # Funkcja do odswiezania selekcji czatu
     def update_text_based_on_selection(self):
         self.current_option = self.comboBox.currentText()
         parts = self.current_option.split('-')
@@ -115,10 +126,12 @@ class main_menu(object):
         merged_option = '-'.join(parts)
         self.current_option = merged_option
         
+    # Wyslanie wiadomosci na serwer --> wlaczenie flagi wysylania 
     def send_message(self):
         self.threadpool.waitForDone()
         self.message_to_send = True  # Ustaw flagę na True, aby wysłać wiadomość
 
+    # Funkcja do przejscia okna znajomych
     def znajomi(self):
         self.znajomi_flag = True
         self.timer.stop()
@@ -129,20 +142,19 @@ class main_menu(object):
              if i.isVisible():
                 position = i.geometry().topLeft()  # Pobranie pozycji okna
                 i.close()
-        # Tworzymy nowe okno i je wyświetlamy
         self.window = QtWidgets.QWidget()  # Stwórz nowe okno
 
         from Znajomi import znajomi
-        self.ui = znajomi(self.Form,self.nick,position.x(),position.y(),self.client_socket)  # Utwórz obiekt klasy signup
-        self.ui.setupUi(self.window)  # Ustaw UI dla tego okna
-        self.window.show()  # Pokaż nowe okno
+        self.ui = znajomi(self.Form,self.nick,position.x(),position.y(),self.client_socket) 
+        self.ui.setupUi(self.window)
+        self.window.show()
 
+    # Jezeli flaga jest aktywna to funkcja przesle wiadomosc na serwer
     def send_message_to_server(self):
 
         self.current_option = self.comboBox.currentText()
         message = self.lineEdit_2.text().strip()
         nick = self.nick
-
 
         if self.current_option == "":
             self.label_status.setText("Nie wybrano chatu!") 
@@ -165,6 +177,9 @@ class main_menu(object):
 
         self.lineEdit_2.setText("")
 
+        self.chat_history.append(f'{self.nick}: {message}')
+        self.signals.update_chat.emit(self.chat_history)
+
         flag = 0
         self.client_socket.send(struct.pack("i", flag))
         time.sleep(0.5)
@@ -176,7 +191,8 @@ class main_menu(object):
 
 
 
-    def send_to_server(self, flag, data):
+    # Wysyl wyboru chatu na serwer
+    def send_selection_to_server(self, flag, data):
         try:
             self.client_socket.send(struct.pack("i",flag))
             self.client_socket.send(data.encode('utf-8'))
@@ -185,7 +201,8 @@ class main_menu(object):
         except Exception as e:
             return f"Error send: {str(e)}"
 
-    def receive_history(self):
+    # Odbior czatow od serwera
+    def receive_chats(self):
         flag = 300
         self.client_socket.send(struct.pack("i", flag))
         self.client_socket.send(self.nick.encode('utf-8'))
@@ -216,7 +233,6 @@ class main_menu(object):
                     print("\033[31mUżytkownik nie posiada żadnych chatów !\033[0m")
                 break
             except Exception as e:
-                print(f"An error occurred while receiving history: {e}")
                 break
 
         if new_nazwyChaty != self.nazwyChaty:
@@ -224,51 +240,41 @@ class main_menu(object):
             self.idChaty = new_idChaty
             self.update_combobox()
     
-    def receive_chat(self):
+    # Odbior historii czatu
+    def receive_history(self):
         history_received = False
-        chat_history = []  # Lista do przechowywania historii chatu
+        self.chat_history = []
 
-        # Najpierw odbieramy historię chatu
         while not history_received:
             try:
-                # Odbieranie historii (w formacie danych z serwera)
                 mess = self.client_socket.recv(1024).decode('utf-8', errors='replace')
                 if mess:
-                    chat_history.append(mess)  # Dodaj wiadomość do historii
+                    self.chat_history.append(mess)
                 else:
                     print("Server disconnected")
                     break
             except socket.timeout:
                 break
             except Exception as e:
-                print(f"An error occurred while receiving message: {e}")
                 break
             else:
-                # Jeśli wiadomość została odebrana pomyślnie
                 history_received = True
 
-        self.signals.update_chat.emit(chat_history)
+        self.signals.update_chat.emit(self.chat_history)
 
-    def update_chat_history(self, chat_history):
-    # Uaktualnij textEdit w głównym wątku
-        if chat_history:
-            self.textEdit.setText("".join(chat_history))  # Ustaw tekst na wszystkie wiadomości w historii
+    # Odswiezenie czatu po odbiorze z serwera
+    def update_chat_history(self):
+        if self.chat_history:
+            self.textEdit.setText("".join(self.chat_history))
         else:
             self.textEdit.setText("Brak wiadomości w historii.")
         self.textEdit.moveCursor(QtGui.QTextCursor.MoveOperation.End)
 
-    # Przypisz metodę do sygnału
-    
+    # Odswiezenie wyboru czatow po odbiorze z serwera
     def update_combobox(self):
-        self.comboBox.blockSignals(True)  # Zablokowanie sygnałów podczas aktualizacji
+        self.comboBox.blockSignals(True)
         self.comboBox.clear()
         for nazwa in self.nazwyChaty:
             self.comboBox.addItem(nazwa)
-        self.comboBox.blockSignals(False)  # Odblokowanie sygnałów
+        self.comboBox.blockSignals(False)
         self.update_text_based_on_selection()
-
-    def handle_result(self, result):
-        pass
-
-    def handle_error(self, error):
-        print(f"Error: {error[1]}")

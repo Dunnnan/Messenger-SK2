@@ -18,10 +18,14 @@ except Exception as e:
     exit()
 
 def disconnect():
-    flag=-1
-    client_socket.send(struct.pack("i",flag))
-    client_socket.close()
-    exit()
+    try:
+        flag = -1
+        if client_socket:
+            client_socket.send(struct.pack("i", flag))
+            client_socket.close()
+        print("Disconnected from the server.")
+    except Exception:
+        pass
 
 
 thread_pool = QtCore.QThreadPool.globalInstance()

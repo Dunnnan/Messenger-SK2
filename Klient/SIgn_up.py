@@ -7,11 +7,13 @@ import struct
 import time
 
 class signup(object):
+
+    # Inicjalizacja klasy
     def __init__(self,Form,client_socket):
         self.Form = Form
         self.client_socket = client_socket
 
-
+    # Inicjalizacja GUI
     def setupUi(self, Form):
         Form.setObjectName("Sign up")
         Form.resize(266, 393)
@@ -31,7 +33,6 @@ class signup(object):
         self.lineEdit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
         self.lineEdit.setClearButtonEnabled(False)
         self.lineEdit.setObjectName("lineEdit")
-        self.lineEdit.returnPressed.connect(self.signup_action)  # Reakcja na Enter
 
         self.lineEdit_2 = QtWidgets.QLineEdit(parent=Form)
         self.lineEdit_2.setGeometry(QtCore.QRect(60, 150, 131, 31))
@@ -39,7 +40,6 @@ class signup(object):
         self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
         self.lineEdit_2.setClearButtonEnabled(False)
         self.lineEdit_2.setObjectName("lineEdit_2")
-        self.lineEdit_2.returnPressed.connect(self.signup_action)  # Reakcja na Enter
 
         self.lineEdit_3 = QtWidgets.QLineEdit(parent=Form)
         self.lineEdit_3.setGeometry(QtCore.QRect(60, 200, 131, 31))
@@ -47,7 +47,6 @@ class signup(object):
         self.lineEdit_3.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
         self.lineEdit_3.setClearButtonEnabled(False)
         self.lineEdit_3.setObjectName("lineEdit_3")
-        self.lineEdit_3.returnPressed.connect(self.signup_action)  # Reakcja na Enter
 
         self.lineEdit_4 = QtWidgets.QLineEdit(parent=Form)
         self.lineEdit_4.setGeometry(QtCore.QRect(60, 250, 131, 31))
@@ -55,7 +54,6 @@ class signup(object):
         self.lineEdit_4.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         self.lineEdit_4.setClearButtonEnabled(False)
         self.lineEdit_4.setObjectName("lineEdit_4")
-        self.lineEdit_4.returnPressed.connect(self.signup_action)  # Reakcja na Enter
 
         self.pushButton = QtWidgets.QPushButton(parent=Form)
         self.pushButton.setGeometry(QtCore.QRect(80, 320, 91, 31))
@@ -82,6 +80,7 @@ class signup(object):
         self.threadpool = QtCore.QThreadPool()
         self.threadpool.setMaxThreadCount(1)
 
+    # Ustawienie początkowych wartości komórek
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "App"))
@@ -93,6 +92,7 @@ class signup(object):
         self.pushButton.setText(_translate("Form", "Utwórz konto"))
         self.lineEdit_5.setText(_translate("Form", ""))
 
+    # Obsługa rejestracji - przy poprawności danych --> rozpoczęcie tworzenia konta (serwer)
     def signup_action(self):
 
         imie = self.lineEdit.text()
@@ -111,6 +111,7 @@ class signup(object):
         self.run_thread(self.send_to_server, data)
         self.run_thread(self.receive_message)
 
+    # Wysłanie danych na serwer (rejestrowanie)
     def send_to_server(self, data):
         try:
             flag=100
@@ -127,6 +128,7 @@ class signup(object):
         except Exception as e:
             return f"Error send: {str(e)}"
 
+    # Odbiór od serwera zwrotki na temat rejestracji -> czy uzytkownik istnieje czy nie 
     def receive_message(self):
         try:
             response = self.client_socket.recv(4)
@@ -134,28 +136,29 @@ class signup(object):
             return response
         except Exception as e:
             return f"Error recv: {str(e)}, {response}\n"
-        
+    
+    # Funkcja pomocnicza do zarządzania wątkami
     def run_thread(self, function, *args):
         worker = Worker(function, *args)
         worker.signals.result.connect(self.handle_result)
         worker.signals.error.connect(self.handle_error)
         self.threadpool.start(worker)
 
+    # Sprawdzenie rezultatu rejestracji -> poprawna - przejście do logowania | niepoprawna -> wyświetlenie komunikatu
     def handle_result(self, result):
 
         if result==120:
+            self.lineEdit_5.setText("")
             open_windows=QtWidgets.QApplication.topLevelWidgets()
             for i in open_windows:
                 i.close()
-            # Tworzymy nowe okno i je wyświetlamy
-            self.window = QtWidgets.QWidget()  # Stwórz nowe okno
-            self.ui = signin(self.Form, self.client_socket)  # Utwórz obiekt klasy signup
-            self.ui.setupUi(self.window)  # Ustaw UI dla tego okna
-            self.window.show()  # Pokaż nowe okno
+            self.window = QtWidgets.QWidget() 
+            self.ui = signin(self.Form, self.client_socket) 
+            self.ui.setupUi(self.window) 
+            self.window.show() 
         else:
             _translate = QtCore.QCoreApplication.translate
             self.lineEdit_5.setText(_translate("Form", "Podany użytkownik już istnieje!"))
         
-
     def handle_error(self, error):
         print(f"Error: {error[1]}")
