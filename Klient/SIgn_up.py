@@ -61,14 +61,14 @@ class signup(object):
         self.pushButton.clicked.connect(self.signup_action)
 
         self.lineEdit_5 = QtWidgets.QLineEdit(parent=Form)
-        self.lineEdit_5.setGeometry(QtCore.QRect(60, 285, 150, 31))
+        self.lineEdit_5.setGeometry(QtCore.QRect(0, 285, 266, 31))
         font = QtGui.QFont()
         font.setPointSize(7)
         font.setBold(True)
         self.lineEdit_5.setFont(font)
         self.lineEdit_5.setAutoFillBackground(False)
         self.lineEdit_5.setStyleSheet("background-color:rgba(255, 255, 255, 0);\n"
-"color:rgba(255, 0, 0, 255)")
+                                    "color:rgba(255, 0, 0, 255)")
         self.lineEdit_5.setFrame(False)
         self.lineEdit_5.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.lineEdit_5.setReadOnly(True)
@@ -105,9 +105,17 @@ class signup(object):
             self.lineEdit_5.setText("Wszystkie pola muszą być wypełnione!")
             return
         else:
+            self.lineEdit_5.setText("")
+
+        max_length = 1024
+        if len(imie) > max_length or len(nazwisko) > max_length or len(username) > max_length or len(password) > max_length:
+            self.lineEdit_5.setText("Dane przekraczają dozwolony rozmiar!")
+            return
+        else:
             self.lineEdit_5.setText("")           
 
         data = (imie, nazwisko,username,password)
+
         self.run_thread(self.send_to_server, data)
         self.run_thread(self.receive_message)
 

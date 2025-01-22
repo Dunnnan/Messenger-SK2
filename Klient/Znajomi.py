@@ -150,9 +150,12 @@ class znajomi(object):
         self.errorLabel = QtWidgets.QLabel(parent=Form)
         self.errorLabel.setGeometry(QtCore.QRect(15, 360, 271, 30))
         self.errorLabel.setObjectName("errorLabel")
-        self.errorLabel.setStyleSheet("color: red;")  # Kolor tekstu na czerwono
+        self.errorLabel.setStyleSheet("color: red;") 
+        font = QtGui.QFont()
+        font.setPointSize(8) 
+        self.errorLabel.setFont(font)
         self.errorLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.errorLabel.setText("")  # Początkowy tekst jest pusty
+        self.errorLabel.setText("") 
 
 
         self.retranslateUi(Form)
@@ -201,10 +204,11 @@ class znajomi(object):
 
     # Po kliknieciu guzika --> obsluga akceptacji i odswiezenie okna
     def accept_friend(self):
-        with QtCore.QMutexLocker(self.mutex):
-            self.run_thread(self.accept_friend_send)
-            time.sleep(0.5)
-            self.refresh()
+        if self.comboBox.currentText() != "":
+            with QtCore.QMutexLocker(self.mutex):
+                self.run_thread(self.accept_friend_send)
+                time.sleep(0.5)
+                self.refresh()
 
     # Funkcja do obslugi przyjecia zaproszenia do znajomych
     def accept_friend_send(self):
@@ -219,10 +223,11 @@ class znajomi(object):
 
     # Po kliknieciu guzika --> obsluga odrzucenia i odswiezenie okna
     def decline_friend(self):
-        with QtCore.QMutexLocker(self.mutex):
-            self.run_thread(self.decline_friend_send)
-            time.sleep(0.5)
-            self.refresh()
+        if self.comboBox.currentText() != "":
+            with QtCore.QMutexLocker(self.mutex):
+                self.run_thread(self.decline_friend_send)
+                time.sleep(0.5)
+                self.refresh()
 
     # Funkcja do obslugi odrzucenia zaproszenia do znajomych
     def decline_friend_send(self):
@@ -236,7 +241,10 @@ class znajomi(object):
 
     # Funkcja rozpoczynająca wątek do otrzymania rezultatu wyszukiwania użytkownika
     def search_users(self):
-        self.run_thread(self.receive_search)
+        if self.plainTextEdit.toPlainText() != "" and len(self.plainTextEdit.toPlainText()) < 1024:
+            self.run_thread(self.receive_search)
+        else:
+            return
 
     # Funkcja obsługująca wyszukiwanie użytkownika
     def receive_search(self):
@@ -250,7 +258,9 @@ class znajomi(object):
         
         time.sleep(0.5)
         searchedNick = self.plainTextEdit.toPlainText()
+        self.plainTextEdit.clear()
         self.client_socket.send(searchedNick.encode('utf-8'))
+
 
         nickiUzytkownicy = []
         strcmpUzytkownicy = []
@@ -281,10 +291,13 @@ class znajomi(object):
                 # Odbierz efekty wyszukiwania (czy znajomi)
                 mess = self.client_socket.recv(1).decode("utf-8",errors='replace')
                 mess = mess.replace('\x00', '')
+
                 if mess:
                     znajomiUzytkownicy.append(mess)
                 else:
+                    
                     break
+
 
             except socket.timeout:
                 if not nickiUzytkownicy:
@@ -314,21 +327,20 @@ class znajomi(object):
 
     # Funkcja obsługująca wysłanie zaproszenia do znajomych
     def send_invitation(self):
-        try: 
-            flag = 700
-            self.client_socket.send(struct.pack("i", flag))
+        if self.comboBox_2.currentText() != "":
+            try: 
+                flag = 700
+                self.client_socket.send(struct.pack("i", flag))
 
-            time.sleep(0.5)
-            print("\033[33mPodaj swój nick: \033[0m")
-            mess2 = self.nick
-            self.client_socket.send(mess2.encode('utf-8'))
+                time.sleep(0.5)
+                mess2 = self.nick
+                self.client_socket.send(mess2.encode('utf-8'))
 
-            time.sleep(0.5)
-            print("\033[33mPodaj nick osoby, którą zapraszasz: \033[0m")
-            mess1 = self.comboBox_2.currentText()
-            self.client_socket.send(mess1.encode('utf-8'))
-        except Exception as e:
-            print(f"An error occured while inviting {e}")
+                time.sleep(0.5)
+                mess1 = self.comboBox_2.currentText()
+                self.client_socket.send(mess1.encode('utf-8'))
+            except Exception as e:
+                print(f"An error occured while inviting {e}")
 
     # Funkcja rozpoczynająca wątek do tworzenia grupy
     def create_group(self):
@@ -356,7 +368,7 @@ class znajomi(object):
             return
         elif mess0 == mess1:
             self.errorLabel.setStyleSheet("color: red;")
-            self.errorLabel.setText("Nie można utworzyć chatu o identycznych użytkownikach!") 
+            self.errorLabel.setText("Podano identycznych użytkowników!") 
             return
         elif result in self.idChaty:
             self.errorLabel.setStyleSheet("color: red;")

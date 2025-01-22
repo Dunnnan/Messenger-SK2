@@ -133,6 +133,10 @@ class signin(object):
             self.lineEdit_4.setText("Niepoprawne dane!")
             self.lineEdit_4.setStyleSheet("color: red;")
             return
+        elif len(data[0]) > 1024 or len(data[1]) > 1024:
+            self.lineEdit_4.setText("Dane przekraczają dozwolony rozmiar (1024 znaki)!")
+            self.lineEdit_4.setStyleSheet("color: red;")
+            return
         
         # Wysyłanie danych do serwera
         flag = 200

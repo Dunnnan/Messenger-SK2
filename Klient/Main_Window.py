@@ -59,10 +59,13 @@ class main_menu(object):
 
         # Etykieta do wyświetlania komunikatów
         self.label_status = QtWidgets.QLabel(parent=Form)
-        self.label_status.setGeometry(QtCore.QRect(70, 350, 281, 21))
+        self.label_status.setGeometry(QtCore.QRect(70, 350, 400, 30))
         self.label_status.setObjectName("label_status")
         self.label_status.setStyleSheet("color: red;")
-        self.label_status.setText("") 
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        self.label_status.setFont(font)
+        self.label_status.setText("")
 
         # Timer do odświeżania zawartości
         self.threadpool = QtCore.QThreadPool()
@@ -129,7 +132,7 @@ class main_menu(object):
     # Wyslanie wiadomosci na serwer --> wlaczenie flagi wysylania 
     def send_message(self):
         self.threadpool.waitForDone()
-        self.message_to_send = True  # Ustaw flagę na True, aby wysłać wiadomość
+        self.message_to_send = True  
 
     # Funkcja do przejscia okna znajomych
     def znajomi(self):
@@ -140,9 +143,9 @@ class main_menu(object):
         open_windows=QtWidgets.QApplication.topLevelWidgets()
         for i in open_windows:
              if i.isVisible():
-                position = i.geometry().topLeft()  # Pobranie pozycji okna
+                position = i.geometry().topLeft() 
                 i.close()
-        self.window = QtWidgets.QWidget()  # Stwórz nowe okno
+        self.window = QtWidgets.QWidget() 
 
         from Znajomi import znajomi
         self.ui = znajomi(self.Form,self.nick,position.x(),position.y(),self.client_socket) 
@@ -161,6 +164,9 @@ class main_menu(object):
             return
         elif message == "":
             self.label_status.setText("Twoja wiadomość jest pusta!") 
+            return
+        elif len(message) > 1024:
+            self.label_status.setText("Wiadomość przekracza dozwolony rozmiar!") 
             return
         else:
             self.label_status.setText("") 
