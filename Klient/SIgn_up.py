@@ -12,6 +12,7 @@ class signup(object):
     def __init__(self,Form,client_socket):
         self.Form = Form
         self.client_socket = client_socket
+        self.block=False
 
     # Inicjalizacja GUI
     def setupUi(self, Form):
@@ -116,8 +117,8 @@ class signup(object):
 
         data = (imie, nazwisko,username,password)
 
-        self.run_thread(self.send_to_server, data)
-        self.run_thread(self.receive_message)
+        self.run_thread1(self.send_to_server, data)
+        self.run_thread2(self.receive_message)
 
     # Wysłanie danych na serwer (rejestrowanie)
     def send_to_server(self, data):
@@ -131,6 +132,7 @@ class signup(object):
             self.client_socket.send(data[2].encode('utf-8'))
             time.sleep(1)
             self.client_socket.send(data[3].encode('utf-8'))
+            
                 
             return "Message sent."
         except Exception as e:
@@ -145,8 +147,14 @@ class signup(object):
         except Exception as e:
             return f"Error recv: {str(e)}, {response}\n"
     
-    # Funkcja pomocnicza do zarządzania wątkami
-    def run_thread(self, function, *args):
+    # Funkcja pomocnicza do zarządzania wątkamiem do wysyłu
+    def run_thread1(self, function, *args):
+        worker = Worker(function, *args)
+        worker.signals.error.connect(self.handle_error)
+        self.threadpool.start(worker)
+
+    # Funkcja pomocnicza do zarządzania wątkamiem do odbioru
+    def run_thread2(self, function, *args):
         worker = Worker(function, *args)
         worker.signals.result.connect(self.handle_result)
         worker.signals.error.connect(self.handle_error)
@@ -156,6 +164,7 @@ class signup(object):
     def handle_result(self, result):
 
         if result==120:
+            self.block=True
             self.lineEdit_5.setText("")
             open_windows=QtWidgets.QApplication.topLevelWidgets()
             for i in open_windows:
@@ -163,10 +172,12 @@ class signup(object):
             self.window = QtWidgets.QWidget() 
             self.ui = signin(self.Form, self.client_socket) 
             self.ui.setupUi(self.window) 
-            self.window.show() 
+            self.window.show()
         else:
-            _translate = QtCore.QCoreApplication.translate
-            self.lineEdit_5.setText(_translate("Form", "Podany użytkownik już istnieje!"))
+            print(self.block)
+            if not self.block:
+                _translate = QtCore.QCoreApplication.translate
+                self.lineEdit_5.setText(_translate("Form", "Podany użytkownik już istnieje!"))
         
     def handle_error(self, error):
         print(f"Error: {error[1]}")
