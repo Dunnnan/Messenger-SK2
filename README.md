@@ -1,25 +1,5 @@
 # Messenger-SK2
 
-## TODO
-0. System flag. (Klient wysyła flagę, aby serwer wiedział jakie operacje wykonać)
-1. Tworzenie Konta. (Nick|Login Hasło Imię Nazwisko adresObrazka)
-2. Logowanie.
-3. Strona główna
-4. Chat.
-5. Wyświetlanie znajomych.
-6. Wyszukiwywanie znajomych.
-7. Dodawanie znajomych.
-8. Grupowa konwersacja.
-
-### Czy możemy napisać klienta w pythonie.
-### Jak ma wyglądać konwersacja z wieloma użytkownikami naraz.
-
-### Odpowiedź Prowadzącego
-1. Można napisaćw pythonie
-2. tutaj zostawiam inwencję państwu, ale podam przykład: Mają Panstwo zaimplemntowany system znajomych,
- wybieramy 2 z tych znajomych i tworzymy konwersacje grupową w której serwer, po odebraniu wiadomości przesyła ją do innych uszestników, sami uszestnicy nasłuchują na wiadomosci od serwera 
-
-
 # Protokół
 
 Klient:
@@ -78,7 +58,7 @@ nickUżytkownika2,nickUżytkownika0-nickUżytkownika2
 ...
 ```
 
-## Żądania
+## Żądania - serwer
 ##
 
 ``` Tworzenie konta : 100 ```
@@ -248,16 +228,8 @@ Brak.
 Kończy obsługę żądań.
 
 ##
-## Szkielet klienta
+## Żądania - klient
 ##
-
-## Ważne ogólne rzeczy, które trzeba uwzględnić
-***Odświeżanie cykliczne - Niektóre bloki powinny być wywoływane cyklicznie i samoistnie - 300, 400, 500, aby zapewnić aktualność danych po stronie użytkownika. (Te bloki też powinny być wykonane od razu po zalogowaniu)*** <br><br>
-***Odświeżanie po zmianach - Dodatkowo po każdej operacji zmiany danych - 700, 710, 720, 800, 0, również powinno mieć miejsce odświeżenie, chyba że cykl odświeżenia jest na tyle krótki, iż brak tego aspektu będzie niezauważalny dla użytkownika*** <br><br>
-***Menu rozwijane - Wybór chatu z menu rozwijanego powinien umożliwić przypisanie id tego chatu do jakiejś zmiennej currentChat albo currentChatIndex dla łatwości wysyłania tego id do serwera (tak samo nick użytkownika)*** <br><br>
-***Wyszukiwarka - Przyjąłem, że wyszukujemy użytkowników, którzy jeszcze nie są naszymi znajomymi, albo nie wysłali nam zaproszenia (lub vice versa), stąd 3 listy zwracane przez serwer*** <br><br>
-***Przypisywanie zmiennych - zmienne, które są aktualnie podawane z klawiatury w celu przesłania serwerowi (jak np. w 700, 710, 720 nicki użytkowników, których dotyczą zaproszenia) powinny być przypisywane w momencie klikięcia konkretnego guzika w aplikacji (feeedback pls czy możliwe)***
-
 
 ##
 ``` Strona główna : 300 ```
