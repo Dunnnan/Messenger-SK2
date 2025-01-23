@@ -13,7 +13,7 @@ Klient:
 
 
 
-## Struktura plików
+# Struktura plików
 ##
 
 ```
@@ -57,7 +57,8 @@ nickUżytkownika1,nickUżytkownika0-nickUżytkownika1
 nickUżytkownika2,nickUżytkownika0-nickUżytkownika2
 ...
 ```
-
+##
+<br><br>
 # Żądania - serwer
 ##
 
@@ -228,6 +229,7 @@ Brak.
 Kończy obsługę żądań.
 
 ##
+<br><br>
 # Żądania - klient
 ##
 
