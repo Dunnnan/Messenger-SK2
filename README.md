@@ -58,7 +58,7 @@ nickUżytkownika2,nickUżytkownika0-nickUżytkownika2
 ...
 ```
 
-## Żądania - serwer
+# Żądania - serwer
 ##
 
 ``` Tworzenie konta : 100 ```
@@ -228,7 +228,7 @@ Brak.
 Kończy obsługę żądań.
 
 ##
-## Żądania - klient
+# Żądania - klient
 ##
 
 ##
